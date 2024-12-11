@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { MenuItem } from './food-delivery-system.type';
+import { MenuItem } from './food-delivery-system.types';
 
 export class FoodDeliverySystem {
     private menu: Map<string, MenuItem> = new Map(); // itemId -> [name, price, inventory]

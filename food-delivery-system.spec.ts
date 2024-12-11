@@ -1,5 +1,5 @@
 import { FoodDeliverySystem } from "./food-delivery-system";
-import { MenuItem } from "./food-delivery-system.type";
+import { MenuItem } from "./food-delivery-system.types";
 
 describe('FoodDeliverySystem', () => {
     let system: FoodDeliverySystem;
