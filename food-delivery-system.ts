@@ -1,21 +1,28 @@
 import { v4 as uuidv4 } from 'uuid';
+import { MenuItem } from './food-delivery-system.types';
 
 export class FoodDeliverySystem {
-    private menu: Map<string, [string, number, number]> = new Map(); // itemId -> [name, price, inventory]
+    private menu: Map<string, MenuItem> = new Map(); // itemId -> [name, price, inventory]
     private orders: Map<string, Record<string, any>> = new Map(); // orderId -> { details }
     private userBalances: Map<string, number> = new Map(); // userId -> balance
     private riders: string[] = []; // List of available riders
 
     // Menu Operations
     addMenuItem(itemId: string, name: string, price: number, inventory: number): void {
-        this.menu.set(itemId, [name, price, inventory]);
+        const menuItem = {
+            name,
+            price,
+            inventory
+        }
+
+        this.menu.set(itemId, menuItem);
     }
 
     removeMenuItem(itemId: string): void {
         this.menu.delete(itemId);
     }
 
-    getMenu(): Map<string, [string, number, number]> {
+    getMenu(): Map<string, MenuItem> {
         return this.menu;
     }
 
@@ -35,10 +42,10 @@ export class FoodDeliverySystem {
         itemIds.forEach(itemId => {
             const item = this.menu.get(itemId);
             if (!item) throw new Error(`Menu item ${itemId} not found.`);
-            if (item[2] <= 0) {
+            if (item.inventory <= 0) {
                 itemsWithInsufficientInventory.push(itemId);
             }
-            total += item[1];
+            total += item.price;
         });
 
         if (itemsWithInsufficientInventory.length > 0) {
@@ -57,7 +64,12 @@ export class FoodDeliverySystem {
         // Deplete inventory
         itemIds.forEach(itemId => {
             const item = this.menu.get(itemId)!;
-            this.menu.set(itemId, [item[0], item[1], item[2] - 1]);
+            const menuItem = {
+                name: item.name,
+                price: item.price,
+                inventory: item.inventory - 1
+            }
+            this.menu.set(itemId, menuItem);
         });
 
         // Assign a rider
