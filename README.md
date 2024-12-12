@@ -36,16 +36,20 @@ To get started with this repository, follow these steps:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-organization/srp-kata.git
-   cd srp-kata
+   git clone https://github.com/bazaartechnologies/srp-kata-typescript.git
    ```
 
-2. **Install Dependencies** (if applicable)
+2.  **Create a new Branch**
+   ```bash
+   git checkout -b <your-branch-name>
+   ```
+
+3. **Install Dependencies** (if applicable)
    ```bash
    npm install
    ```
 
-3. **Run the Tests**
+4. **Run the Tests**
    Execute the existing test suite to ensure everything is working as expected before starting your refactor:
    ```bash
    npm test
