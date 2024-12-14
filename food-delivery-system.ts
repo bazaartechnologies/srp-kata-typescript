@@ -111,18 +111,7 @@ export class OrderService {
         if (!this.userService.doesUserExist(userId)) throw new Error("User not found.");
         if (itemIds.length === 0) throw new Error("Order must have at least one item.");
         let total = 0;
-        const itemsWithInsufficientInventory: string[] = [];
-        itemIds.forEach(itemId => {
-            const item = this.menuService.getMenuItem(itemId);
-            if (!item) throw new Error(`Menu item ${itemId} not found.`);
-            if (item.inventory <= 0) {
-                itemsWithInsufficientInventory.push(itemId);
-            }
-            total += item.price;
-        });
-        if (itemsWithInsufficientInventory.length > 0) {
-            throw new Error(`Insufficient inventory for items: ${itemsWithInsufficientInventory.join(', ')}`);
-        }
+        total = this.calculateTotal(itemIds, total);
         // Apply discount
         const discount = this.calculateDiscount(total, discountCode);
         total -= discount;
@@ -131,10 +120,7 @@ export class OrderService {
             throw new Error("Insufficient balance.");
         }
         // Deplete inventory
-        itemIds.forEach(itemId => {
-            const item = this.menuService.getMenuItem(itemId)!;
-            this.menuService.addItem(itemId, item.name, item.price, item.inventory - 1);
-        });
+        this.depleteInventory(itemIds);
         // Assign a rider
         if (!this.ridersService.isAvailable()) throw new Error("No riders available.");
         const assignedRider = this.ridersService.get();
@@ -151,6 +137,31 @@ export class OrderService {
         this.notificationService.sendNotification(userId, `Your order ${orderId} has been placed successfully.`);
         this.notificationService.sendNotification("restaurant", `A new order ${orderId} has been received.`);
         return orderId;
+    }
+
+    
+
+    private calculateTotal(itemIds: string[], total: number) {
+        const itemsWithInsufficientInventory: string[] = [];
+        itemIds.forEach(itemId => {
+            const item = this.menuService.getMenuItem(itemId);
+            if (!item) throw new Error(`Menu item ${itemId} not found.`);
+            if (item.inventory <= 0) {
+                itemsWithInsufficientInventory.push(itemId);
+            }
+            total += item.price;
+        });
+        if (itemsWithInsufficientInventory.length > 0) {
+            throw new Error(`Insufficient inventory for items: ${itemsWithInsufficientInventory.join(', ')}`);
+        }
+        return total;
+    }
+
+    private depleteInventory(itemIds: string[]) {
+        itemIds.forEach(itemId => {
+            const item = this.menuService.getMenuItem(itemId)!;
+            this.menuService.addItem(itemId, item.name, item.price, item.inventory - 1);
+        });
     }
 
     private calculateDiscount(total: number, discountCode: string | null): number {
