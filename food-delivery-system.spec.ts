@@ -1,16 +1,20 @@
-import { FoodDeliverySystem } from "./food-delivery-system";
+import { FoodDeliverySystem, MenuService, UserService } from "./food-delivery-system";
 import { MenuItem } from "./food-delivery-system.types";
 
 describe('FoodDeliverySystem', () => {
     let system: FoodDeliverySystem;
+    let user: UserService;
+    let menuService : MenuService;
 
     beforeEach(() => {
         system = new FoodDeliverySystem();
+        user = new UserService();
+        menuService = new MenuService();
     });
 
     test('add menu item and retrieve it', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 10);
-        const menu = system.getMenu();
+        menuService.addMenuItem('1', 'Burger', 5.99, 10);
+        const menu = menuService.getMenu();
 
         const item: MenuItem = menu.get('1')!
 
@@ -20,9 +24,9 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('remove menu item', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 10);
-        system.removeMenuItem('1');
-        const menu = system.getMenu();
+        menuService.addMenuItem('1', 'Burger', 5.99, 10);
+        menuService.removeMenuItem('1');
+        const menu = menuService.getMenu();
 
         expect(menu.get('1')).toBeUndefined();
     });
@@ -35,13 +39,13 @@ describe('FoodDeliverySystem', () => {
     // });
 
     test('create order successfully with sufficient balance and inventory', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 10);
-        system.addMenuItem('2', 'Pizza', 8.99, 5);
-        system.addUser('user1', 50.0);
+        menuService.addMenuItem('1', 'Burger', 5.99, 10);
+        menuService.addMenuItem('2', 'Pizza', 8.99, 5);
+        user.addUser('user1', 50.0);
         system.addRider('rider1')
 
         const orderId = system.createOrder('user1', ['1', '2'], null);
-        const menu = system.getMenu();
+        const menu = menuService.getMenu();
 
         const burger: MenuItem = menu.get('1')!
         const pizza: MenuItem = menu.get('2')!
@@ -52,8 +56,8 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('fail to create order due to insufficient inventory', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 0); // No inventory
-        system.addUser('user1', 50.0);
+        menuService.addMenuItem('1', 'Burger', 5.99, 0); // No inventory
+        user.addUser('user1', 50.0);
 
         expect(() => {
             system.createOrder('user1', ['1'], null);
@@ -61,8 +65,8 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('fail to create order due to insufficient balance', () => {
-        system.addMenuItem('1', 'Burger', 10.0, 5);
-        system.addUser('user1', 5.0); // Insufficient balance
+        menuService.addMenuItem('1', 'Burger', 10.0, 5);
+        user.addUser('user1', 5.0); // Insufficient balance
 
         expect(() => {
             system.createOrder('user1', ['1'], null);
@@ -70,8 +74,8 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('apply discount while creating order', () => {
-        system.addMenuItem('1', 'Burger', 10.0, 5);
-        system.addUser('user1', 50.0);
+        menuService.addMenuItem('1', 'Burger', 10.0, 5);
+        user.addUser('user1', 50.0);
         system.addRider('rider1');
 
         const orderId = system.createOrder('user1', ['1'], 'DISCOUNT10');
@@ -79,8 +83,8 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('send notifications after placing an order', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 10);
-        system.addUser('user1', 50.0);
+        menuService.addMenuItem('1', 'Burger', 5.99, 10);
+        user.addUser('user1', 50.0);
         system.addRider('rider1');
 
         const orderId = system.createOrder('user1', ['1'], null);
@@ -90,8 +94,8 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('assign rider to order and check delivery status', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 10);
-        system.addUser('user1', 50.0);
+        menuService.addMenuItem('1', 'Burger', 5.99, 10);
+        user.addUser('user1', 50.0);
         system.addRider('rider1');
 
         const orderId = system.createOrder('user1', ['1'], null);
@@ -101,8 +105,8 @@ describe('FoodDeliverySystem', () => {
     });
 
     test('update delivery status of order', () => {
-        system.addMenuItem('1', 'Burger', 5.99, 10);
-        system.addUser('user1', 50.0);
+        menuService.addMenuItem('1', 'Burger', 5.99, 10);
+        user.addUser('user1', 50.0);
         system.addRider('rider1');
 
         const orderId = system.createOrder('user1', ['1'], null);
