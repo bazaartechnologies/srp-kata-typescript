@@ -110,8 +110,7 @@ export class OrderService {
     create(userId: string, itemIds: string[], discountCode: string | null): string {
         if (!this.userService.doesUserExist(userId)) throw new Error("User not found.");
         if (itemIds.length === 0) throw new Error("Order must have at least one item.");
-        let total = 0;
-        total = this.calculateTotal(itemIds, total);
+        let total = this.calculateTotal(itemIds);
         // Apply discount
         const discount = this.calculateDiscount(total, discountCode);
         total -= discount;
@@ -141,7 +140,8 @@ export class OrderService {
 
     
 
-    private calculateTotal(itemIds: string[], total: number) {
+    private calculateTotal(itemIds: string[]) {
+        let total = 0;
         const itemsWithInsufficientInventory: string[] = [];
         itemIds.forEach(itemId => {
             const item = this.menuService.getMenuItem(itemId);
