@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { MenuItem } from './food-delivery-system.types';
 let userInstance: UserService | null = null;
 let menuInstance: MenuService | null = null;
+let riderInstance: RiderService | null = null;
+
 
 export class NotificationService {
     sendNotification(recipient: string, message: string): void {
@@ -64,33 +66,43 @@ export class MenuService {
 
 }
 
+export class RiderService {
+    private riders: string[] = []; // List of available riders
+
+    constructor() {
+        if (riderInstance) {
+            return riderInstance;
+        }
+        riderInstance = this;
+    }
+    
+    addRider(riderId: string): void {
+        this.riders.push(riderId);
+    }
+
+    getRiders(): string[] {
+        return this.riders;
+    }
+
+    areRidersAvailable(): boolean {
+        return this.riders.length > 0;
+    }
+
+    getRider(): string {
+        return this.riders.shift() || '';
+    }   
+}
+
 
 export class FoodDeliverySystem {
     // private menu: Map<string, MenuItem> = new Map(); // itemId -> [name, price, inventory]
     private orders: Map<string, Record<string, any>> = new Map(); // orderId -> { details }
     // private userBalances: Map<string, number> = new Map(); // userId -> balance
-    private riders: string[] = []; // List of available riders
+    // private riders: string[] = []; // List of available riders
     private notificationService: NotificationService = new NotificationService();
     private userService: UserService = new UserService();
     private menuService: MenuService = new MenuService();
-
-
-
-    // Menu Operations
-    // addMenuItem(itemId: string, name: string, price: number, inventory: number): void {
-    // const menuItem = {
-    // name,
-    // price,
-    // inventory
-    // }
-
-    // this.menu.set(itemId, menuItem);
-    // }
-
-    // User Operations
-    // addUser(userId: string, balance: number): void {
-    // this.userBalances.set(userId, balance);
-    // }
+    private ridersService: RiderService = new RiderService();
 
     // Order Operations
     createOrder(userId: string, itemIds: string[], discountCode: string | null): string {
@@ -135,8 +147,8 @@ export class FoodDeliverySystem {
         });
 
         // Assign a rider
-        if (this.riders.length === 0) throw new Error("No riders available.");
-        const assignedRider = this.riders.shift()!;
+        if (!this.ridersService.areRidersAvailable()) throw new Error("No riders available.");
+        const assignedRider = this.ridersService.getRider();
 
         // Create order
         const orderId = uuidv4();
@@ -183,13 +195,13 @@ export class FoodDeliverySystem {
         if (!order) throw new Error(`Order ${orderId} not found.`);
         order.status = status;
     }
-
+// 
     // Rider Operations
-    addRider(riderId: string): void {
-        this.riders.push(riderId);
-    }
-
-    getRiders(): string[] {
-        return this.riders;
-    }
+    // addRider(riderId: string): void {
+        // this.riders.push(riderId);
+    // }
+// 
+    // getRiders(): string[] {
+        // return this.riders;
+    // }
 }
