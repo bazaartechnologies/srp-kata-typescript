@@ -1,46 +1,31 @@
 import { v4 as uuidv4 } from 'uuid';
 import { MenuItem } from './food-delivery-system.types';
+import { MenuService } from './menu-service';
+import { RiderService } from './riders-servies';
+import { UserBalanceService } from './user-balance-service';
 
 export class FoodDeliverySystem {
-    private menu: Map<string, MenuItem> = new Map(); // itemId -> [name, price, inventory]
+    // private menu: Map<string, MenuItem> = new Map(); // itemId -> [name, price, inventory]
     private orders: Map<string, Record<string, any>> = new Map(); // orderId -> { details }
-    private userBalances: Map<string, number> = new Map(); // userId -> balance
-    private riders: string[] = []; // List of available riders
+    //private userBalances: Map<string, number> = new Map(); // userId -> balance
+    // private riders: string[] = []; // List of available riders
+    // private menuservice = new MenuService();
+    // private riderservice = new RiderService();
 
-    // Menu Operations
-    addMenuItem(itemId: string, name: string, price: number, inventory: number): void {
-        const menuItem = {
-            name,
-            price,
-            inventory
-        }
-
-        this.menu.set(itemId, menuItem);
-    }
-
-    removeMenuItem(itemId: string): void {
-        this.menu.delete(itemId);
-    }
-
-    getMenu(): Map<string, MenuItem> {
-        return this.menu;
-    }
-
-    // User Operations
-    addUser(userId: string, balance: number): void {
-        this.userBalances.set(userId, balance);
-    }
-
+    
     // Order Operations
-    createOrder(userId: string, itemIds: string[], discountCode: string | null): string {
-        if (!this.userBalances.has(userId)) throw new Error("User not found.");
+    getOrders(): Map<string, Record<string, any>> {
+        return this.orders;
+    }
+    createOrder(userId: string, itemIds: string[], discountCode: string | null, menuSystem: MenuService, riderService: RiderService, userBalanceService: UserBalanceService): string {
+        if (!userBalanceService.has(userId)) throw new Error("User not found.");
         if (itemIds.length === 0) throw new Error("Order must have at least one item.");
 
         let total = 0;
         const itemsWithInsufficientInventory: string[] = [];
 
         itemIds.forEach(itemId => {
-            const item = this.menu.get(itemId);
+            const item = menuSystem.getMenu().get(itemId);
             if (!item) throw new Error(`Menu item ${itemId} not found.`);
             if (item.inventory <= 0) {
                 itemsWithInsufficientInventory.push(itemId);
@@ -57,24 +42,24 @@ export class FoodDeliverySystem {
         total -= discount;
 
         // Check user balance
-        if ((this.userBalances.get(userId) || 0) < total) {
+        if ((userBalanceService.getUserBalance(userId) || 0) < total) {
             throw new Error("Insufficient balance.");
         }
 
         // Deplete inventory
         itemIds.forEach(itemId => {
-            const item = this.menu.get(itemId)!;
+            const item = menuSystem.getMenu().get(itemId)!;
             const menuItem = {
                 name: item.name,
                 price: item.price,
                 inventory: item.inventory - 1
             }
-            this.menu.set(itemId, menuItem);
+            menuSystem.getMenu().set(itemId, menuItem);
         });
 
         // Assign a rider
-        if (this.riders.length === 0) throw new Error("No riders available.");
-        const assignedRider = this.riders.shift()!;
+        if (riderService.getRiders().length === 0) throw new Error("No riders available.");
+        const assignedRider = riderService.getRiders().shift()!;
 
         // Create order
         const orderId = uuidv4();
@@ -122,12 +107,5 @@ export class FoodDeliverySystem {
         order.status = status;
     }
 
-    // Rider Operations
-    addRider(riderId: string): void {
-        this.riders.push(riderId);
-    }
 
-    getRiders(): string[] {
-        return this.riders;
-    }
 }
