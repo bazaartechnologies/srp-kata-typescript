@@ -1,4 +1,8 @@
-import { FoodDeliverySystem, MenuService, OrderService, RiderService, UserService } from "./food-delivery-system";
+import { FoodDeliverySystem } from "./food-delivery-system";
+import { UserService } from './UserService';
+import { MenuService } from './MenuService';
+import { RiderService } from './RiderService';
+import { OrderService } from './OrderService';
 import { MenuItem } from "./food-delivery-system.types";
 
 describe('FoodDeliverySystem', () => {
